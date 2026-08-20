@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 // Array de registros de entrenamiento
 const registros = ref([])
@@ -101,6 +101,32 @@ function agregarRegistro() {
   registros.value.push(registro)
 
   // Limpiar formulario
+  energia.value = 3
+  nota.value = ''
+}
+
+/**
+ * Watch deep para guardar los registros en localStorage.
+ * Se ejecuta cada vez que el array o sus elementos cambian.
+ */
+watch(
+  registros,
+  (nuevoValor) => {
+    localStorage.setItem('hero-training-registros', JSON.stringify(nuevoValor))
+  },
+  { deep: true }
+)
+
+function agregarRegistro() {
+  const registro = {
+    id: Date.now(),
+    fecha: new Date().toISOString(),
+    energia: energia.value,
+    nota: nota.value.trim()
+  }
+
+  registros.value.push(registro)
+
   energia.value = 3
   nota.value = ''
 }
