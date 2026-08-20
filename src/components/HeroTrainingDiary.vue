@@ -99,6 +99,12 @@
                 </div>
               </div>
             </div>
+            <!-- Botón borrar todo -->
+            <div class="mt-3">
+              <button class="btn btn-danger w-100 diary-btn-delete" @click="borrarTodo">
+                Borrar todos los registros
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -239,6 +245,15 @@ const registrosOrdenados = computed(() => {
 function eliminarRegistro(id) {
   registros.value = registros.value.filter(r => r.id !== id)
 }
+
+/**
+ * Borra todos los registros con confirmación.
+ */
+function borrarTodo() {
+  if (confirm('¿Estás seguro de que quieres borrar todos los registros?')) {
+    registros.value = []
+  }
+}
 </script>
 
 <style scoped>
@@ -347,5 +362,15 @@ function eliminarRegistro(id) {
 .diary-item-nota {
   color: #d1d5db;
   font-size: 0.9rem;
+}
+
+.diary-btn-delete {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+
+.diary-btn-delete:hover {
+  background: rgba(239, 68, 68, 0.4);
 }
 </style>
