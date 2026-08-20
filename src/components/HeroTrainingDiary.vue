@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 
 // Array de registros de entrenamiento
 const registros = ref([])
