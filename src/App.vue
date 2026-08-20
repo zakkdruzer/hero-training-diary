@@ -1,9 +1,9 @@
 <template>
-  <div id="app"></div>
+  <HeroTrainingDiary />
 </template>
 
 <script setup>
-// Contenedor base.
+import HeroTrainingDiary from './components/HeroTrainingDiary.vue'
 </script>
 
 <style>
