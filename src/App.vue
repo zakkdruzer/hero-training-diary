@@ -1,7 +1,16 @@
+<template>
+  <div id="app"></div>
+</template>
+
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+// Contenedor base.
 </script>
 
-<template>
-  <HelloWorld />
-</template>
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0b0f19;
+  color: #e5e7eb;
+}
+</style>
