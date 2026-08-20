@@ -152,20 +152,6 @@ watch(
   { deep: true }
 )
 
-function agregarRegistro() {
-  const registro = {
-    id: Date.now(),
-    fecha: new Date().toISOString(),
-    energia: energia.value,
-    nota: nota.value.trim()
-  }
-
-  registros.value.push(registro)
-
-  energia.value = 3
-  nota.value = ''
-}
-
 watch(
   registros,
   (nuevoValor) => {
@@ -188,20 +174,6 @@ onMounted(() => {
     }
   }
 })
-
-function agregarRegistro() {
-  const registro = {
-    id: Date.now(),
-    fecha: new Date().toISOString(),
-    energia: energia.value,
-    nota: nota.value.trim()
-  }
-
-  registros.value.push(registro)
-
-  energia.value = 3
-  nota.value = ''
-}
 
 /**
  * Calcula el promedio de energía de todos los registros.
