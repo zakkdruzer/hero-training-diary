@@ -19,14 +19,8 @@
                   Nivel de energía (1–5)
                 </label>
                 <div class="d-flex gap-2">
-                  <button
-                    v-for="nivel in [1, 2, 3, 4, 5]"
-                    :key="nivel"
-                    type="button"
-                    class="btn"
-                    :class="energia === nivel ? 'btn-warning' : 'btn-outline-light'"
-                    @click="energia = nivel"
-                  >
+                  <button v-for="nivel in [1, 2, 3, 4, 5]" :key="nivel" type="button" class="btn"
+                    :class="energia === nivel ? 'btn-warning' : 'btn-outline-light'" @click="energia = nivel">
                     {{ nivel }}
                   </button>
                 </div>
@@ -37,13 +31,8 @@
                 <label for="nota" class="form-label diary-label">
                   Nota del entrenamiento (opcional)
                 </label>
-                <textarea
-                  id="nota"
-                  v-model="nota"
-                  class="form-control diary-input"
-                  rows="3"
-                  placeholder="Ej: Entrenamiento de resistencia, 30 min de cardio..."
-                ></textarea>
+                <textarea id="nota" v-model="nota" class="form-control diary-input" rows="3"
+                  placeholder="Ej: Entrenamiento de resistencia, 30 min de cardio..."></textarea>
               </div>
 
               <!-- Botón agregar -->
@@ -55,20 +44,60 @@
             </form>
 
             <!-- Estado vacío -->
-            <div
-              v-if="registros.length === 0"
-              class="text-center diary-empty"
-            >
+            <div v-if="registros.length === 0" class="text-center diary-empty">
               <p class="diary-status">
                 No hay registros aún. Agrega tu primer día de entrenamiento.
               </p>
             </div>
 
-            <!-- Lista de registros (aún sin lógica completa) -->
+            <!-- Lista de registros -->
             <div v-else>
-              <p class="diary-status">
-                Registros: {{ registros.length }}
-              </p>
+              <!-- Resumen -->
+              <div class="card diary-resumen-card mb-3">
+                <div class="card-body">
+                  <h5 class="diary-resumen-title">Resumen de entrenamiento</h5>
+                  <div class="row g-2">
+                    <div class="col-4">
+                      <span class="diary-resumen-label">Promedio:</span>
+                      <p class="diary-resumen-value">{{ promedioEnergia }}</p>
+                    </div>
+                    <div class="col-4">
+                      <span class="diary-resumen-label">Mejor día:</span>
+                      <p class="diary-resumen-value">
+                        {{ diaMejor ? diaMejor.energia : '-' }}
+                      </p>
+                    </div>
+                    <div class="col-4">
+                      <span class="diary-resumen-label">Peor día:</span>
+                      <p class="diary-resumen-value">
+                        {{ diaPeor ? diaPeor.energia : '-' }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lista de registros -->
+              <div class="list-group">
+                <div v-for="registro in registrosOrdenados" :key="registro.id" class="list-group-item diary-list-item">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1 diary-item-energia">
+                        Energía: {{ registro.energia }} / 5
+                      </h6>
+                      <small class="diary-item-fecha">
+                        {{ new Date(registro.fecha).toLocaleDateString() }}
+                      </small>
+                      <p class="mb-0 diary-item-nota">
+                        {{ registro.nota || 'Sin nota' }}
+                      </p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" @click="eliminarRegistro(registro.id)">
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -78,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 
 // Array de registros de entrenamiento
 const registros = ref([])
@@ -129,6 +158,86 @@ function agregarRegistro() {
 
   energia.value = 3
   nota.value = ''
+}
+
+watch(
+  registros,
+  (nuevoValor) => {
+    localStorage.setItem('hero-training-registros', JSON.stringify(nuevoValor))
+  },
+  { deep: true }
+)
+
+/**
+ * Carga los registros guardados en localStorage al montar el componente.
+ */
+onMounted(() => {
+  const guardados = localStorage.getItem('hero-training-registros')
+  if (guardados) {
+    try {
+      registros.value = JSON.parse(guardados)
+    } catch (e) {
+      // Si hay un error al parsear, empezamos con array vacío
+      registros.value = []
+    }
+  }
+})
+
+function agregarRegistro() {
+  const registro = {
+    id: Date.now(),
+    fecha: new Date().toISOString(),
+    energia: energia.value,
+    nota: nota.value.trim()
+  }
+
+  registros.value.push(registro)
+
+  energia.value = 3
+  nota.value = ''
+}
+
+/**
+ * Calcula el promedio de energía de todos los registros.
+ */
+const promedioEnergia = computed(() => {
+  if (registros.value.length === 0) return 0
+  const suma = registros.value.reduce((acc, r) => acc + r.energia, 0)
+  return (suma / registros.value.length).toFixed(1)
+})
+
+/**
+ * Obtiene el registro con la energía más alta.
+ */
+const diaMejor = computed(() => {
+  if (registros.value.length === 0) return null
+  return registros.value.reduce((mejor, actual) =>
+    actual.energia > mejor.energia ? actual : mejor
+  )
+})
+
+/**
+ * Obtiene el registro con la energía más baja.
+ */
+const diaPeor = computed(() => {
+  if (registros.value.length === 0) return null
+  return registros.value.reduce((peor, actual) =>
+    actual.energia < peor.energia ? actual : peor
+  )
+})
+
+/**
+ * Retorna los registros ordenados del más reciente al más antiguo.
+ */
+const registrosOrdenados = computed(() => {
+  return [...registros.value].sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+})
+
+/**
+ * Elimina un registro por su id.
+ */
+function eliminarRegistro(id) {
+  registros.value = registros.value.filter(r => r.id !== id)
 }
 </script>
 
@@ -191,5 +300,52 @@ function agregarRegistro() {
 .diary-status {
   color: #fde047;
   font-size: 0.95rem;
+}
+
+.diary-resumen-card {
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid #374151;
+  border-radius: 12px;
+}
+
+.diary-resumen-title {
+  color: #facc15;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.diary-resumen-label {
+  color: #fde047;
+  font-size: 0.8rem;
+  display: block;
+}
+
+.diary-resumen-value {
+  color: #facc15;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.diary-list-item {
+  background: rgba(31, 41, 55, 0.5);
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+.diary-item-energia {
+  color: #facc15;
+  font-weight: 700;
+}
+
+.diary-item-fecha {
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.diary-item-nota {
+  color: #d1d5db;
+  font-size: 0.9rem;
 }
 </style>
